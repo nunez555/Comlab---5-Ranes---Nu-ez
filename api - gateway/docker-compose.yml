@@ -1,0 +1,69 @@
+version: "3.8"
+
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - INVENTORY_SERVICE_URL=http://inventory-service:3001
+      - ORDER_SERVICE_URL=http://order-service:3002
+      - PAYMENT_SERVICE_URL=http://payment-service:3003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+    depends_on:
+      - inventory-service
+      - order-service
+      - payment-service
+      - notification-service
+    networks:
+      - app-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - app-net
+
+  inventory-service:
+    build: ./inventory-service
+    ports:
+      - "3001:3001"
+    networks:
+      - app-net
+
+  order-service:
+    build: ./order-service
+    ports:
+      - "3002:3002"
+    environment:
+      - INVENTORY_SERVICE_URL=http://inventory-service:3001
+      - PAYMENT_SERVICE_URL=http://payment-service:3003
+      - NOTIFICATION_SERVICE_URL=http://notification-service:3004
+    depends_on:
+      - inventory-service
+      - payment-service
+      - notification-service
+    networks:
+      - app-net
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "3003:3003"
+    networks:
+      - app-net
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "3004:3004"
+    networks:
+      - app-net
+
+networks:
+  app-net:
+    driver: bridge

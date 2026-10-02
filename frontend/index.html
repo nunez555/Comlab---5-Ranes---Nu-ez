@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Comlab Microservices Shop</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    .item { border: 1px solid #ccc; padding: 15px; margin: 10px 0; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Comlab - 5 Ranes - Nuñez Shop</h1>
+  <div id="items"></div>
+  <h2>Create Order</h2>
+  <input id="itemId" type="number" placeholder="Item ID" value="1">
+  <input id="quantity" type="number" placeholder="Quantity" value="1">
+  <input id="name" type="text" placeholder="Your Name" value="Student">
+  <button onclick="createOrder()">Place Order</button>
+  <pre id="result"></pre>
+
+  <script>
+    async function loadItems() {
+      const res = await fetch('/api/inventory/items');
+      const items = await res.json();
+      document.getElementById('items').innerHTML = items.map(i => 
+        `<div class="item"><b>${i.name}</b> - Stock: ${i.stock} - ₱${i.price} (ID: ${i.id})</div>`
+      ).join('');
+    }
+
+    async function createOrder() {
+      const body = {
+        itemId: parseInt(document.getElementById('itemId').value),
+        quantity: parseInt(document.getElementById('quantity').value),
+        customerName: document.getElementById('name').value
+      };
+      const res = await fetch('/api/orders/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+      loadItems();
+    }
+
+    loadItems();
+  </script>
+</body>
+</html>
